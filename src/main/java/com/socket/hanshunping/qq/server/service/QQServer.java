@@ -23,7 +23,13 @@ public class QQServer {
 
     /** 创建一个集合,存放多个用户,如果是这些用户登录,就认为是合法 */
     private static ConcurrentHashMap<String , User> validUser = new ConcurrentHashMap<>();
+
+    /** 离线消息 */
     private static ConcurrentHashMap<String , ArrayList<Message>> offLineDb = new ConcurrentHashMap<>();
+
+    public static ConcurrentHashMap<String, ArrayList<Message>> getOffLineDb() {
+        return offLineDb;
+    }
 
     static {
         validUser.put("100",new User("100","123456"));
@@ -49,7 +55,7 @@ public class QQServer {
     public QQServer(){
         try  {
             System.out.println("服务端在9999端口进行监听");
-            // new Thread(new SendNewsToAllService()).start();
+            new Thread(new SendNewsToAllService()).start();
             ss = new ServerSocket(9999);
             while (true){ /** 当和某个客户端连接后,会继续监听,因此while */
                 Socket socket = ss.accept(); /** 如果没有客户端连接,就会阻塞在这里 */
@@ -65,6 +71,16 @@ public class QQServer {
                     message.setMesType(MessageType.MESSAGE_LOGIN_SUCCEED);
                     /** 将message对象回复客户端 */
                     oos.writeObject(message);
+
+                    /** 检查离线文件 */
+                    ArrayList<Message> messages = offLineDb.get(user.getUserId());
+                    if (messages!=null && messages.size()>0) {
+                        for (Message msg : messages) {
+                            ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
+                            os.writeObject(msg);
+                        }
+                        offLineDb.remove(user.getUserId());
+                    }
 
                     /** 创建一个线程,和客户端保持通信,该线程需要持有socket对象 */
                     ServerConnectClientThread serverConnectClientThread = new ServerConnectClientThread(socket, user.getUserId());

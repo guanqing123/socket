@@ -3,6 +3,8 @@ package com.socket.hanshunping.qq.client.service;
 import com.socket.hanshunping.qq.common.Message;
 import com.socket.hanshunping.qq.common.MessageType;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
@@ -40,6 +42,14 @@ public class ClientConnectServerThread extends Thread {
                 } else if (message.getMesType().equals(MessageType.MESSAGE_TO_ALL_MES)) {
                     /** 显示在客户端的控制台 */
                     System.out.println("\n" + message.getSender() + " 对大家说：" + message.getContent());
+                } else if (message.getMesType().equals(MessageType.MESSAGE_FILE_MES)){
+                    /** 拓展: 这里如果让用户指定保存的路径,如何实现? */
+                    /** 转存文件 */
+                    System.out.println("\n" + message.getSender() + " 发送文件给" + message.getGetter());
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(message.getDest()));
+                    bos.write(message.getBytes());
+                    bos.close();
+                    System.out.println("\n" + "文件接收ok." + "文件地址：" + message.getDest());
                 } else {
                     System.out.println("是其他类型的message,暂时不处理....");
                 }

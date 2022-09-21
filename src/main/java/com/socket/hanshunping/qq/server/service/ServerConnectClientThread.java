@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * @description: 该类的一个对象和某个客户端保持通信
@@ -53,10 +54,19 @@ public class ServerConnectClientThread extends Thread{
                 } else if (message.getMesType().equals(MessageType.MESSAGE_COMM_MES)) {
                     /** 根据message获取getterid，然后再得到对应的线程 */
                     ServerConnectClientThread serverConnectClientThread = ManageServerConnectClientThread.getServerConnectClientThread(message.getGetter());
-                    Socket socket = serverConnectClientThread.getSocket();
-                    ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-                    /** 转发, 提示如果客户不在线,可以保存到数据库,这样就可以实现离线留言 */
-                    oos.writeObject(message);
+                    if (serverConnectClientThread == null) { /** 说明目标对象离线 */
+                        ArrayList<Message> messages = QQServer.getOffLineDb().get(message.getGetter());
+                        if (messages == null) {
+                            messages = new ArrayList<>();
+                            QQServer.getOffLineDb().put(message.getGetter(), messages);
+                        }
+                        messages.add(message);
+                    } else { /** 在线直接发 */
+                        Socket socket = serverConnectClientThread.getSocket();
+                        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+                        /** 转发, 提示如果客户不在线,可以保存到数据库,这样就可以实现离线留言 */
+                        oos.writeObject(message);
+                    }
                 } else if (message.getMesType().equals(MessageType.MESSAGE_TO_ALL_MES)) {
                     /** 需要遍历 管理线程的集合, 把所有的线程的socket得到(排除sender),然后把message进行转发即可 */
                     ManageServerConnectClientThread.getHm().forEach((k, serverConnectClientThread) -> {
@@ -70,6 +80,21 @@ public class ServerConnectClientThread extends Thread{
                             }
                         }
                     });
+                } else if (message.getMesType().equals(MessageType.MESSAGE_FILE_MES)) {
+                    ServerConnectClientThread serverConnectClientThread = ManageServerConnectClientThread.getServerConnectClientThread(message.getGetter());
+                    if (serverConnectClientThread == null) { /** 说明目标对象离线 */
+                        ArrayList<Message> messages = QQServer.getOffLineDb().get(message.getGetter());
+                        if (messages == null) {
+                            messages = new ArrayList<>();
+                            QQServer.getOffLineDb().put(message.getGetter(), messages);
+                        }
+                        messages.add(message);
+                    } else { /** 在线直接发 */
+                        /** 根据getter id 获取到对应的线程, 将 message 对象转发 */
+                        Socket socket = serverConnectClientThread.getSocket();
+                        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+                        oos.writeObject(message);
+                    }
                 } else {
                     System.out.println("其他类型的message, 暂时不处理");
                 }

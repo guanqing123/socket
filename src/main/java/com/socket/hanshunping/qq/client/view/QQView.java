@@ -1,5 +1,6 @@
 package com.socket.hanshunping.qq.client.view;
 
+import com.socket.hanshunping.qq.client.service.FileClientService;
 import com.socket.hanshunping.qq.client.service.MessageClientService;
 import com.socket.hanshunping.qq.client.service.UserClientService;
 import com.socket.hanshunping.qq.utils.Utility;
@@ -20,8 +21,9 @@ public class QQView {
     private UserClientService userClientService = new UserClientService();
     /** 用于用户私聊/群聊 */
     private MessageClientService messageClientService = new MessageClientService();
-    /*private FileClientService fileClientService = new FileClientService();
-    private NotOnlineService notOnlineService = new NotOnlineService();*/
+    /** 用于文件传输 */
+    private FileClientService fileClientService = new FileClientService();
+    /*private NotOnlineService notOnlineService = new NotOnlineService();*/
 
     public static void main(String[] args) {
         new QQView().mainMenu();
@@ -76,15 +78,15 @@ public class QQView {
                                     //编写一个方法，吧消息发给服务端
                                     messageClientService.sendMessageToOne(content, userId, getter);
                                     break;
-                                /*case "4":
+                                case "4":
                                     System.out.println("请输入您想把文件发送给得用户(在线用户)");
                                     String getterId = Utility.readString(50);
                                     System.out.print("请输入发送的文件路径（形式: d:\\xx.jpg）");
                                     String src = Utility.readString(100);
                                     System.out.print("请输入发送到对方的文件路径（形式: :e\\xx.jpg）");
                                     String dest =Utility.readString(100);
-                                    fileClientService.sendFileToOne(src,dest,userId,getterId);
-                                    break;*/
+                                    fileClientService.sendFileToOne(src, dest, userId, getterId);
+                                    break;
                                 case "9":
                                     /** 调用方法,给服务器发送一个退出系统的message */
                                     userClientService.logout();

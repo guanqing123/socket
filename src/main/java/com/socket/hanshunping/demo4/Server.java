@@ -1,6 +1,6 @@
 package com.socket.hanshunping.demo4;
 
-import cn.stylefeng.guns.modular.mes.socket.hanshunping.StreamUtils;
+import com.socket.hanshunping.StreamUtils;
 
 import java.io.*;
 import java.net.ServerSocket;
